@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String        @unique
+  profileImage  String?
+  role          Role          @default(USER)
+  
+  credentials    Credentials? 
+  googleAccount GoogleAccount?
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+}
+
+model Credentials {
+  id       String @id @default(cuid())
+  password String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+}
+
+model GoogleAccount {
+  id       String @id @default(cuid())
+  googleId String @unique
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+}
+
+enum Role {
+  USER
+  ADMIN
+}

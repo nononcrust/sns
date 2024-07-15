@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-main bg-white;
+  }
+
+  button:not([role="checkbox"]),
+  a {
+    @apply focus-visible:focus-ring;
+  }
+
+  .focus-ring {
+    @apply ring-ring outline-none ring-2 ring-offset-2 ring-offset-white;
+  }
+
+  .focus-input-ring {
+    @apply border-primary ring-primary-lighter border outline-none ring-2;
+  }
+
+  .focus-input-ring-error {
+    @apply border-error ring-error-lighter border outline-none ring-2;
+  }
+}
