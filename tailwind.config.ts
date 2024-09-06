@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animatePlugin from "tailwindcss-animate";
 import colors from "tailwindcss/colors";
 import defaultTheme from "tailwindcss/defaultTheme";
 
@@ -14,32 +15,35 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-pretendard)", ...defaultTheme.fontFamily.sans],
       },
+      spacing: {
+        page: "24px",
+      },
       container: {
         center: true,
-        padding: "16px",
         screens: {
-          "2xl": "1200px",
+          "2xl": "600px",
         },
       },
       colors: {
-        primary: colors.blue[500],
-        "primary-dark": colors.blue[600],
-        "primary-light": colors.blue[400],
-        "primary-lighter": colors.blue[200],
-        ring: colors.blue[400],
+        primary: colors.black,
+        "primary-dark": colors.black,
+        "primary-light": colors.gray[900],
+        "primary-lighter": colors.gray[300],
+        ring: colors.gray[400],
         success: colors.green[500],
         "success-light": colors.green[400],
         error: colors.red[500],
         "error-light": colors.red[400],
         "error-lighter": colors.red[200],
-        main: colors.gray[900],
+        main: colors.gray[800],
         sub: colors.gray[500],
-        divider: colors.gray[300],
-        border: colors.gray[300],
-        content: colors.gray[100],
+        subtle: colors.gray[400],
+        divider: colors.gray[200],
+        border: colors.gray[200],
+        content: colors.gray[50],
       },
     },
   },
-  plugins: [],
+  plugins: [animatePlugin],
 };
 export default config;

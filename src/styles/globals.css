@@ -2,9 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db white;
+}
+
 @layer base {
   body {
-    @apply text-main bg-white;
+    @apply bg-white text-main;
   }
 
   button:not([role="checkbox"]),
@@ -13,14 +18,18 @@
   }
 
   .focus-ring {
-    @apply ring-ring outline-none ring-2 ring-offset-2 ring-offset-white;
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-white;
   }
 
   .focus-input-ring {
-    @apply border-primary ring-primary-lighter border outline-none ring-2;
+    @apply border border-primary outline-none ring-2 ring-primary-lighter;
   }
 
   .focus-input-ring-error {
-    @apply border-error ring-error-lighter border outline-none ring-2;
+    @apply border border-error outline-none ring-2 ring-error-lighter;
+  }
+
+  .disable-focus-ring {
+    @apply focus-visible:ring-0;
   }
 }

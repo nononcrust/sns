@@ -1,79 +1,45 @@
-import { SessionTokenPayload } from "@/features/auth/token";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { api } from "./shared";
-
-const ENDPOINT = "/auth";
-
-export const authApi = {
-  loginWithCredentials: async (request: LoginRequest) => {
-    const response = await api.post(`${ENDPOINT}/login`, request.body);
-    return response.data;
-  },
-  signupWithCredentials: async (request: SignupWithCredentialsRequest) => {
-    const response = await api.post(`${ENDPOINT}/signup`, request.body);
-    return response.data;
-  },
-  signupWithGoogle: async (request: SignupWithGoogleRequest) => {
-    const response = await api.post<{ url: string }>(`${ENDPOINT}/google`, request.body);
-    return response.data;
-  },
-  getSession: async () => {
-    const response = await api.get<GetSessionResponse>(`${ENDPOINT}/session`);
-    return response.data;
-  },
-};
-
-// TODO: redirect URL 검증 로직 추가
-export const redirectUrlSchema = z.string().nullable();
-
-export const loginRequestBodySchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
-});
-
-type LoginRequest = {
-  body: z.infer<typeof loginRequestBodySchema>;
-};
-
-export const signupWithCredentialsRequestBodySchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-export const signupWithGoogleRequestBodySchema = z.object({
-  redirect: redirectUrlSchema,
-});
-
-type SignupWithGoogleRequest = {
-  body: z.infer<typeof signupWithGoogleRequestBodySchema>;
-};
-
-type SignupWithCredentialsRequest = {
-  body: z.infer<typeof signupWithCredentialsRequestBodySchema>;
-};
-
-export type GetSessionResponse = SessionTokenPayload | null;
 
 export const authService = {
   useSignupWithCredentials: () => {
     return useMutation({
-      mutationFn: authApi.signupWithCredentials,
+      mutationFn: api.auth.login.$post,
     });
   },
-  useSignupWithGoogle: () => {
+  useLoginWithGoogle: () => {
     return useMutation({
-      mutationFn: authApi.signupWithGoogle,
+      mutationFn: async (...args: Parameters<typeof api.auth.google.$post>) => {
+        const response = await api.auth.google.$post(...args);
+        return await response.json();
+      },
+    });
+  },
+  useLoginWithCredentials: () => {
+    return useMutation({
+      mutationFn: api.auth.login.$post,
     });
   },
   useGetSession: () => {
     return useQuery({
       queryKey: ["session"],
-      queryFn: authApi.getSession,
+      queryFn: async () => {
+        const response = await api.auth.session.$get();
+        return await response.json();
+      },
+    });
+  },
+  useLogout: () => {
+    return useMutation({
+      mutationFn: async (...args: Parameters<typeof api.auth.logout.$post>) => {
+        const response = await api.auth.logout.$post(...args);
+        return await response.json();
+      },
+    });
+  },
+  useResetPassword: () => {
+    return useMutation({
+      mutationFn: api.auth.passwordReset.$post,
     });
   },
 };
-
-export const SIGN_UP_ERROR_CODE = {
-  EMAIL_ALREADY_EXISTS: "EMAIL_ALREADY_EXISTS",
-} as const;
