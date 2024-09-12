@@ -1,18 +1,13 @@
-import { getServerSession } from "@/features/auth/session";
+import { getAuthenticatedServerSession } from "@/features/auth/session";
 import { prisma } from "@/lib/prisma";
 import { storage, UploadFolder } from "@/lib/supabase";
 import { UpdateProfileImageRequestBody } from "@/services/profile";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
 
 export const profile = new Hono()
   .get("/", async (c) => {
-    const session = await getServerSession(c);
-
-    if (!session) {
-      throw new HTTPException(401, { message: "Unauthorized" });
-    }
+    const session = await getAuthenticatedServerSession(c);
 
     const user = await prisma.user.findUniqueOrThrow({
       where: {
@@ -23,11 +18,7 @@ export const profile = new Hono()
     return c.json(user, 200);
   })
   .patch("/image", zValidator("form", UpdateProfileImageRequestBody), async (c) => {
-    const session = await getServerSession(c);
-
-    if (!session) {
-      throw new HTTPException(401, { message: "Unauthorized" });
-    }
+    const session = await getAuthenticatedServerSession(c);
 
     const body = c.req.valid("form");
 

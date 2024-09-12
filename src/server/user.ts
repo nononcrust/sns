@@ -38,4 +38,29 @@ export const user = new Hono()
     }
 
     return c.json(user, 200);
+  })
+  .get("/:id/posts", async (c) => {
+    const userId = c.req.param("id");
+
+    const posts = await prisma.post.findMany({
+      skip: 0,
+      take: 10,
+      where: {
+        authorId: userId,
+      },
+    });
+
+    const count = await prisma.post.count({
+      where: {
+        authorId: userId,
+      },
+    });
+
+    return c.json(
+      {
+        posts: posts,
+        total: count,
+      },
+      200,
+    );
   });

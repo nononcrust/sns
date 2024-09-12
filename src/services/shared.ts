@@ -41,5 +41,6 @@ export const queryKey = {
   user: {
     list: "user:list",
     detail: "user:detail",
+    posts: "user:posts",
   },
 } as const;

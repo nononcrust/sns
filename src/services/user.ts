@@ -21,4 +21,13 @@ export const userService = {
       },
     });
   },
+  useUserPosts: (userId: string) => {
+    return useQuery({
+      queryKey: [queryKey.user.posts, userId],
+      queryFn: async () => {
+        const response = await api.users[":id"].posts.$get({ param: { id: userId } });
+        return await response.json();
+      },
+    });
+  },
 };

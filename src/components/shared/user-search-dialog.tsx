@@ -2,11 +2,12 @@ import { route } from "@/constants/route";
 import useDebounce from "@/hooks/use-debounce";
 import { useInput } from "@/hooks/use-input";
 import { userService } from "@/services/user";
-import { SearchIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, CornerDownLeftIcon, SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Command } from "../primitives/command";
 import { Avatar } from "../ui/avatar";
 import { Dialog } from "../ui/dialog";
+import { Shortcut } from "../ui/shortcut";
 
 interface UserSearchDialogProps {
   trigger: React.ReactNode;
@@ -16,7 +17,7 @@ export const UserSearchDialog = ({ trigger }: UserSearchDialogProps) => {
   return (
     <Dialog>
       <Dialog.Title className="sr-only">유저 검색</Dialog.Title>
-      <Dialog.Description className="sr-only">유저 이름으로 검색하세요</Dialog.Description>
+      <Dialog.Description className="sr-only">닉네임으로 검색하세요</Dialog.Description>
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Content
         side="top"
@@ -25,6 +26,20 @@ export const UserSearchDialog = ({ trigger }: UserSearchDialogProps) => {
         className="w-[600px] gap-0 rounded-lg p-0"
       >
         <Content />
+        <Dialog.Footer className="flex justify-end gap-4 px-page py-2">
+          <Shortcut label="위로 이동하기">
+            <ArrowUpIcon />
+          </Shortcut>
+          <Shortcut label="아래로 이동하기">
+            <ArrowDownIcon />
+          </Shortcut>
+          <Shortcut label="프로필 보기">
+            <CornerDownLeftIcon />
+          </Shortcut>
+          <Shortcut label="닫기">
+            <span>ESC</span>
+          </Shortcut>
+        </Dialog.Footer>
       </Dialog.Content>
     </Dialog>
   );
@@ -89,6 +104,7 @@ const SearchResult = ({ value }: SearchResultProps) => {
         {users.map((user) => (
           <UserListItem
             key={user.id}
+            search={value}
             user={{
               id: user.id,
               nickname: user.nickname,
@@ -103,6 +119,7 @@ const SearchResult = ({ value }: SearchResultProps) => {
 };
 
 interface UserListItem {
+  search: string;
   user: {
     id: string;
     nickname: string;
@@ -111,7 +128,7 @@ interface UserListItem {
   };
 }
 
-const UserListItem = ({ user }: UserListItem) => {
+const UserListItem = ({ search, user }: UserListItem) => {
   const router = useRouter();
 
   const onClick = () => {
@@ -129,43 +146,13 @@ const UserListItem = ({ user }: UserListItem) => {
           <Avatar.Fallback />
         </Avatar>
         <div className="flex flex-col items-start">
-          <span className="font-medium">{user.nickname}</span>
+          <HighlightedText text={user.nickname} highlight={search} />
           <span className="text-[13px] text-sub">{user.email}</span>
         </div>
       </Command.Item>
     </Dialog.Close>
   );
 };
-
-// const useUsers = ({ search }: { search: string }) => {
-//   const [users, setUsers] = useState<Awaited<ReturnType<typeof fetchUsers>>>();
-
-//   const fetchUsers = useCallback(async () => {
-//     const response = await api.users.$get({
-//       query: {
-//         search,
-//       },
-//     });
-//     const data = await response.json();
-
-//     setUsers(data);
-
-//     return data;
-//   }, [search]);
-
-//   const reset = () => {
-//     setUsers(undefined);
-//   };
-
-//   useEffect(() => {
-//     fetchUsers();
-//   }, [fetchUsers]);
-
-//   return {
-//     data: users,
-//     reset,
-//   };
-// };
 
 interface GroupTitleProps {
   children: React.ReactNode;
@@ -176,5 +163,29 @@ export const GroupTitle = ({ children }: GroupTitleProps) => {
     <div className="flex items-center px-page pb-1 text-[13px] font-medium text-subtle">
       {children}
     </div>
+  );
+};
+
+interface HighlightedTextProps {
+  text: string;
+  highlight: string;
+}
+
+const HighlightedText = ({ text, highlight }: HighlightedTextProps) => {
+  const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+
+  return (
+    <span>
+      {parts.map((part, index) => (
+        <span
+          key={index}
+          className={
+            part.toLowerCase() === highlight.toLowerCase() ? "font-semibold text-blue-500" : ""
+          }
+        >
+          {part}
+        </span>
+      ))}
+    </span>
   );
 };

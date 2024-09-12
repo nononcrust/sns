@@ -4,7 +4,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { LoginPromptDialog } from "./login-prompt-dialog";
 
 export const ProtectedAction = ({ children }: { children: React.ReactNode }) => {
-  const session = useSession();
+  const { session } = useSession();
 
   const loginPromptDialog = useDialog();
 

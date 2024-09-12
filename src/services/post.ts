@@ -87,4 +87,9 @@ export const postService = {
       },
     });
   },
+  useReportPost: () => {
+    return useMutation({
+      mutationFn: api.posts[":id"].report.$post,
+    });
+  },
 };

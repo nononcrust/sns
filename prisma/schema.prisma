@@ -29,6 +29,7 @@ model User {
   followers Follow[] @relation("FollowFollowing")
   followings Follow[] @relation("FollowFollower")
   notifications Notification[]
+  reports Report[]
 
   createdAt DateTime @default(now()) @db.Timestamptz()
   updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -94,6 +95,7 @@ model Post {
   likes Like[]
   bookmarks Bookmark[]
   images Image[]
+  reports Report[]
 
   createdAt DateTime @default(now()) @db.Timestamptz()
   updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -141,6 +143,7 @@ model Comment {
   authorId String
 
   images Image[]
+  reports Report[]
 
   createdAt DateTime @default(now()) @db.Timestamptz()
   updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -197,6 +200,32 @@ model Image {
 
   comment Comment? @relation(fields: [commentId], references: [id])
   commentId String?
+}
+
+model Report {
+  id      String @id @default(cuid())
+  type ReportType
+
+  reporter User @relation(fields: [reporterId], references: [id])
+  reporterId String
+
+  post Post? @relation(fields: [postId], references: [id])
+  postId String?
+
+  comment Comment? @relation(fields: [commentId], references: [id])
+  commentId String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+}
+
+enum ReportType {
+  SPAM
+  ABUSIVE_LANGUAGE
+  EXPLICIT_CONTENT
+  PERSONAL_INFORMATION
+  INAPPROPRIATE_NICKNAME
+  INAPPROPRIATE_IMAGE
+  OFF_TOPIC
 }
 
 enum Role {

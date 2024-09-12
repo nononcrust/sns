@@ -1,6 +1,7 @@
 "use client";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { ProtectedAction } from "@/components/shared/protected-action";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tab } from "@/components/ui/tab";
@@ -21,13 +22,21 @@ export default function ProfilePage() {
 
   const { data: user, error } = userService.useUserDetail(userId);
 
+  const { data: userPostData } = userService.useUserPosts(userId);
+
   const { session } = useSession();
 
   if (error) return <UserNotFoundFallback />;
 
-  if (!user) return null;
+  if (!user || !userPostData) return null;
 
   const isMe = session && session.user.id === user.id;
+
+  const onFollowButtonClick = () => {
+    if (!session) return;
+
+    setFollowed((prev) => !prev);
+  };
 
   return (
     <main className="container min-h-dvh border-x border-border pt-12">
@@ -41,18 +50,20 @@ export default function ProfilePage() {
           <h2 className="text-sub">{user.email}</h2>
         </div>
         {!isMe && (
-          <Button
-            variant={followed ? "outlined" : "primary"}
-            className="rounded-full px-3"
-            onClick={() => setFollowed((prev) => !prev)}
-          >
-            {followed ? "언팔로우" : "팔로우"}
-          </Button>
+          <ProtectedAction>
+            <Button
+              variant={followed ? "outlined" : "primary"}
+              className="rounded-full px-3"
+              onClick={onFollowButtonClick}
+            >
+              {followed ? "언팔로우" : "팔로우"}
+            </Button>
+          </ProtectedAction>
         )}
       </div>
       <Tab value={tab.value} onChange={tab.onChange}>
         <Tab.List className="mt-8">
-          <Tab.Item value="posts">작성글 14</Tab.Item>
+          <Tab.Item value="posts">작성글 {userPostData.total}</Tab.Item>
           <Tab.Item value="comments">댓글 287</Tab.Item>
         </Tab.List>
         <Tab.Content value="posts">

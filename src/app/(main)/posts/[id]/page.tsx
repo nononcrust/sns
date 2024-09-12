@@ -1,26 +1,16 @@
 "use client";
 
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { PostImage } from "@/components/shared/post-image";
+import { PostMoreActionsDropdownMenu } from "@/components/shared/post-more-actions-dropdown-menu";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { route } from "@/constants/route";
 import { useSession } from "@/features/auth/use-session";
 import { Editor } from "@/features/editor/editor";
-import { useDialog } from "@/hooks/use-dialog";
 import { formatDateTime } from "@/lib/date";
 import { postService } from "@/services/post";
 import copy from "copy-to-clipboard";
-import {
-  ChevronLeftIcon,
-  EllipsisIcon,
-  EyeIcon,
-  LinkIcon,
-  MessageSquareWarningIcon,
-  PencilIcon,
-  TrashIcon,
-} from "lucide-react";
+import { ChevronLeftIcon, EllipsisIcon, EyeIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
@@ -33,8 +23,6 @@ export default function PostDetailPage() {
 
   const params = useParams<{ id: string }>();
 
-  const deleteConfirmDialog = useDialog();
-
   const postId = params.id;
 
   const { data: post, error } = postService.usePostDetail(postId);
@@ -43,10 +31,6 @@ export default function PostDetailPage() {
   const copyPostLinkToClipboard = () => {
     copy(window.location.origin + route.post.detail({ postId }));
     toast("게시글 링크가 복사되었습니다.");
-  };
-
-  const onDeleteConfirm = () => {
-    // TODO: 게시글 삭제 API 호출
   };
 
   if (error) return <PostNotFoundFallback />;
@@ -90,55 +74,14 @@ export default function PostDetailPage() {
                 </div>
               </div>
             </div>
-            <DropdownMenu>
-              <DropdownMenu.Trigger asChild>
+            <PostMoreActionsDropdownMenu
+              postId={postId}
+              authorId={post.author.id}
+              trigger={
                 <button className="hover:bg-hover rounded-md p-1">
                   <EllipsisIcon className="size-4 text-sub" />
                 </button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content
-                className="w-[150px]"
-                align="end"
-                alignOffset={-12}
-                sideOffset={8}
-              >
-                <DropdownMenu.Item
-                  className="flex justify-between"
-                  onClick={copyPostLinkToClipboard}
-                >
-                  링크 복사하기
-                  <LinkIcon className="size-4" />
-                </DropdownMenu.Item>
-                {!isAuthor && (
-                  <DropdownMenu.Item className="flex justify-between text-error">
-                    신고하기
-                    <MessageSquareWarningIcon className="size-4" />
-                  </DropdownMenu.Item>
-                )}
-                {isAuthor && (
-                  <>
-                    <DropdownMenu.Item className="flex justify-between" asChild>
-                      <Link href={route.post.edit({ postId })}>
-                        게시글 수정하기
-                        <PencilIcon className="size-4" />
-                      </Link>
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item
-                      className="flex justify-between"
-                      onClick={deleteConfirmDialog.open}
-                    >
-                      게시글 삭제하기
-                      <TrashIcon className="size-4" />
-                    </DropdownMenu.Item>
-                  </>
-                )}
-              </DropdownMenu.Content>
-            </DropdownMenu>
-            <ConfirmDialog
-              title="게시글을 삭제할까요?"
-              isOpen={deleteConfirmDialog.isOpen}
-              onOpenChange={deleteConfirmDialog.onOpenChange}
-              onConfirm={onDeleteConfirm}
+              }
             />
           </div>
           <Editor className="mt-8" value={post.content} mode="view" />

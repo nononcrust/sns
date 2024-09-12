@@ -1,8 +1,9 @@
-import { getServerSession } from "@/features/auth/session";
+import { getAuthenticatedServerSession, getServerSession } from "@/features/auth/session";
 import { prisma } from "@/lib/prisma";
 
 import { storage, UploadFolder } from "@/lib/supabase";
 import { zValidator } from "@hono/zod-validator";
+import { ReportType } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -37,6 +38,11 @@ const CreateCommentRequestBody = z.object({
   image: postImageFileSchema.optional(),
 });
 
+type CreatePostReportRequestBody = z.infer<typeof CreatePostReportRequestBody>;
+const CreatePostReportRequestBody = z.object({
+  type: z.nativeEnum(ReportType),
+});
+
 const defaultQuery = {
   page: "1",
   limit: "10",
@@ -47,6 +53,8 @@ const defaultQuery = {
 export const post = new Hono()
   .get("/", zValidator("query", GetPostsRequestQuery), async (c) => {
     const queryParams = c.req.valid("query");
+
+    const session = await getServerSession(c);
 
     const query = {
       page: queryParams.page ?? defaultQuery.page,
@@ -131,11 +139,7 @@ export const post = new Hono()
     }
   })
   .post("/", zValidator("form", CreatePostRequestBody), async (c) => {
-    const session = await getServerSession(c);
-
-    if (!session) {
-      throw new HTTPException(401, { message: "Unauthorized" });
-    }
+    const session = await getAuthenticatedServerSession(c);
 
     const body = c.req.valid("form");
 
@@ -160,11 +164,7 @@ export const post = new Hono()
     return c.json(post, 201);
   })
   .put("/:id", zValidator("json", UpdatePostRequestBody), async (c) => {
-    const session = await getServerSession(c);
-
-    if (!session) {
-      throw new HTTPException(401, { message: "Unauthorized" });
-    }
+    const session = await getAuthenticatedServerSession(c);
 
     const postId = c.req.param("id");
 
@@ -201,11 +201,7 @@ export const post = new Hono()
   .delete("/:id", async (c) => {
     const postId = c.req.param("id");
 
-    const session = await getServerSession(c);
-
-    if (!session) {
-      throw new HTTPException(401, { message: "Unauthorized" });
-    }
+    const session = await getAuthenticatedServerSession(c);
 
     const post = await prisma.post.findUnique({
       where: {
@@ -252,11 +248,7 @@ export const post = new Hono()
   .post("/:id/comments", zValidator("form", CreateCommentRequestBody), async (c) => {
     const body = c.req.valid("form");
 
-    const session = await getServerSession(c);
-
-    if (!session) {
-      throw new HTTPException(401, { message: "Unauthorized" });
-    }
+    const session = await getAuthenticatedServerSession(c);
 
     const postId = c.req.param("id");
 
@@ -293,11 +285,7 @@ export const post = new Hono()
     const postId = c.req.param("id");
     const commentId = c.req.param("commentId");
 
-    const session = await getServerSession(c);
-
-    if (!session) {
-      throw new HTTPException(401, { message: "Unauthorized" });
-    }
+    const session = await getAuthenticatedServerSession(c);
 
     const comment = await prisma.comment.findUnique({
       where: {
@@ -326,4 +314,21 @@ export const post = new Hono()
     });
 
     return c.json(undefined, 204);
+  })
+  .post("/:id/report", zValidator("json", CreatePostReportRequestBody), async (c) => {
+    const body = c.req.valid("json");
+
+    const postId = c.req.param("id");
+
+    const session = await getAuthenticatedServerSession(c);
+
+    const report = await prisma.report.create({
+      data: {
+        type: body.type,
+        reporterId: session.userId,
+        postId: postId,
+      },
+    });
+
+    return c.json(report, 201);
   });

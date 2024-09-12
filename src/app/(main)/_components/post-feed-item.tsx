@@ -1,24 +1,15 @@
 "use client";
 
+import { PostMoreActionsDropdownMenu } from "@/components/shared/post-more-actions-dropdown-menu";
 import { ZoomableImage } from "@/components/shared/zoomable-image";
 import { Avatar } from "@/components/ui/avatar";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { route } from "@/constants/route";
-import { useSession } from "@/features/auth/use-session";
 import { Editor } from "@/features/editor/editor";
 import { formatRelativeTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import copy from "copy-to-clipboard";
-import {
-  EllipsisIcon,
-  HeartIcon,
-  LinkIcon,
-  MessageSquareIcon,
-  MessageSquareWarningIcon,
-} from "lucide-react";
+import { EllipsisIcon, HeartIcon, MessageSquareIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import toast from "react-hot-toast";
 
 interface PostFeedItemProps {
   postId: string;
@@ -41,19 +32,17 @@ interface PostFeedItemProps {
   createdAt: string;
 }
 
-export const PostFeedItem = (props: PostFeedItemProps) => {
-  const {
-    postId,
-    title,
-    content,
-    author,
-    createdAt,
-    liked: initialLiked,
-    likeCount: initialLikeCount,
-    commentCount,
-    images,
-  } = props;
-
+export const PostFeedItem = ({
+  postId,
+  title,
+  content,
+  author,
+  createdAt,
+  liked: initialLiked,
+  likeCount: initialLikeCount,
+  commentCount,
+  images,
+}: PostFeedItemProps) => {
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
 
@@ -86,13 +75,14 @@ export const PostFeedItem = (props: PostFeedItemProps) => {
           </div>
         </div>
         <div>
-          <MoreActionsDropdownMenu
+          <PostMoreActionsDropdownMenu
+            postId={postId}
+            authorId={author.id}
             trigger={
               <button className="hover:bg-hover rounded-md p-1">
                 <EllipsisIcon className="size-4 text-sub" />
               </button>
             }
-            {...props}
           />
         </div>
       </div>
@@ -110,8 +100,11 @@ export const PostFeedItem = (props: PostFeedItemProps) => {
           />
         ))}
       </div>
-      <div className="mt-4 flex justify-end gap-8">
-        <button className="flex items-center gap-2 text-sub" onClick={onLikeButtonClick}>
+      <div className="mt-4 flex justify-end gap-6">
+        <button
+          className="hover:bg-hover flex items-center gap-2 rounded-md px-2 py-0.5 text-sub"
+          onClick={onLikeButtonClick}
+        >
           <HeartIcon className={cn("size-4", liked && "fill-red-500 stroke-red-500")} />
           <span className={cn("text-[13px]", liked && "text-red-500")}>{likeCount}</span>
         </button>
@@ -121,38 +114,5 @@ export const PostFeedItem = (props: PostFeedItemProps) => {
         </div>
       </div>
     </li>
-  );
-};
-
-interface MoreActionsDropdownMenuProps extends PostFeedItemProps {
-  trigger: React.ReactNode;
-}
-
-const MoreActionsDropdownMenu = ({ trigger, postId, author }: MoreActionsDropdownMenuProps) => {
-  const { session } = useSession();
-
-  const copyPostLinkToClipboard = () => {
-    copy(window.location.origin + route.post.detail({ postId }));
-    toast("게시글 링크가 복사되었습니다.");
-  };
-
-  const isAuthor = session && session.user.id === author.id;
-
-  return (
-    <DropdownMenu>
-      <DropdownMenu.Trigger asChild>{trigger}</DropdownMenu.Trigger>
-      <DropdownMenu.Content className="w-[150px]" align="end" alignOffset={-12} sideOffset={8}>
-        <DropdownMenu.Item className="flex justify-between" onClick={copyPostLinkToClipboard}>
-          링크 복사하기
-          <LinkIcon className="size-4" />
-        </DropdownMenu.Item>
-        {!isAuthor && (
-          <DropdownMenu.Item className="flex justify-between text-error">
-            신고하기
-            <MessageSquareWarningIcon className="size-4" />
-          </DropdownMenu.Item>
-        )}
-      </DropdownMenu.Content>
-    </DropdownMenu>
   );
 };
