@@ -12,10 +12,10 @@ export const NewPost = () => {
       href={route.post.create}
     >
       <Avatar className="size-8">
-        <Avatar.Image src={session?.user.profileImage ?? ""} />
+        <Avatar.Image src={session?.user.profileImage} />
         <Avatar.Fallback />
       </Avatar>
-      새 글 작성하기...
+      <span>새 글 작성하기...</span>
     </Link>
   );
 };

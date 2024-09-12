@@ -49,7 +49,7 @@ const RadioGroupItem = React.forwardRef<
       >
         <div
           className={cn(
-            "h-3.5 w-3.5 rounded-full border",
+            "h-3.5 w-3.5 rounded-full border border-border",
             "group-focus:outline-none group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2",
             "group-data-[state=checked]:border-primary-dark",
           )}

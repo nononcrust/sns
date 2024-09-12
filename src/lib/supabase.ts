@@ -3,6 +3,8 @@ import { nanoid } from "nanoid";
 import { env } from "../env";
 
 export enum UploadFolder {
+  POST = "post",
+  COMMENT = "comment",
   USER_PROFILE = "profile",
 }
 
@@ -39,9 +41,18 @@ const getFilePathFromPublicUrl = (publicUrl: string) => {
   );
 };
 
+const uploadFileIfExist = async (file: File | null, folder: UploadFolder) => {
+  if (!file) {
+    return null;
+  }
+
+  return await uploadFile(file, folder);
+};
+
 export const storage = {
   uploadFile,
   deleteFiles,
   getPublicUrl,
   getFilePathFromPublicUrl,
+  uploadFileIfExist,
 };

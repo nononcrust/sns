@@ -1,9 +1,9 @@
 import type { Config } from "tailwindcss";
 import animatePlugin from "tailwindcss-animate";
-import colors from "tailwindcss/colors";
 import defaultTheme from "tailwindcss/defaultTheme";
 
-const config: Config = {
+const config = {
+  darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -16,7 +16,7 @@ const config: Config = {
         sans: ["var(--font-pretendard)", ...defaultTheme.fontFamily.sans],
       },
       spacing: {
-        page: "24px",
+        page: "20px",
       },
       container: {
         center: true,
@@ -25,25 +25,30 @@ const config: Config = {
         },
       },
       colors: {
-        primary: colors.black,
-        "primary-dark": colors.black,
-        "primary-light": colors.gray[900],
-        "primary-lighter": colors.gray[300],
-        ring: colors.gray[400],
-        success: colors.green[500],
-        "success-light": colors.green[400],
-        error: colors.red[500],
-        "error-light": colors.red[400],
-        "error-lighter": colors.red[200],
-        main: colors.gray[800],
-        sub: colors.gray[500],
-        subtle: colors.gray[400],
-        divider: colors.gray[200],
-        border: colors.gray[200],
-        content: colors.gray[50],
+        primary: "var(--primary)",
+        "primary-dark": "var(--primary-dark)",
+        "primary-light": "var(--primary-light)",
+        "primary-lighter": "var(--primary-lighter)",
+        ring: "var(--ring)",
+        success: "var(--success)",
+        "success-light": "var(--success-light)",
+        error: "var(--error)",
+        "error-light": "var(--error-light)",
+        "error-lighter": "var(--error-lighter)",
+        main: "var(--main)",
+        sub: "var(--sub)",
+        subtle: "var(--subtle)",
+        border: "var(--border)",
+        hover: "var(--hover)",
+        content: "var(--content)",
+        background: "var(--background)",
+        dialog: "var(--dialog)",
+        popover: "var(--popover)",
+        switch: "var(--switch)",
       },
     },
   },
   plugins: [animatePlugin],
-};
+} satisfies Config;
+
 export default config;

@@ -1,6 +1,6 @@
 "use client";
 
-import GoogleLogo from "@/assets/icons/google-logo.svg";
+import googleLogo from "@/assets/icons/google-logo.svg";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,6 @@ export default function LoginPage() {
       { json: data },
       {
         onSuccess: () => {
-          console.log("login success, redirect to", redirect ?? route.home);
           router.push(redirect ?? route.home);
         },
         onError: (error) => {
@@ -67,7 +66,6 @@ export default function LoginPage() {
       },
       {
         onSuccess: (data) => {
-          console.log("##", data);
           router.push(data.url);
         },
       },
@@ -134,11 +132,11 @@ export default function LoginPage() {
           <div className="flex justify-center gap-4">
             <button
               type="button"
-              className="flex size-10 items-center justify-center rounded-full border transition-colors hover:bg-gray-50"
+              className="flex size-10 items-center justify-center rounded-full border border-border bg-white"
               onClick={onGoogleButtonClick}
               data-testid={testId.googleLoginButton}
             >
-              <GoogleLogo />
+              <img src={googleLogo.src} alt="구글" />
             </button>
           </div>
           <div className="flex flex-col gap-2">
@@ -146,7 +144,7 @@ export default function LoginPage() {
               <p className="text-[13px] font-medium text-sub">
                 계정이 없으신가요?
                 <Link
-                  className="ml-2 font-semibold text-primary hover:underline"
+                  className="ml-2 font-semibold text-main hover:underline"
                   href={route.auth.signup}
                 >
                   회원가입
@@ -157,7 +155,7 @@ export default function LoginPage() {
               <p className="text-[13px] font-medium text-sub">
                 비밀번호를 잊으셨나요?
                 <Link
-                  className="ml-2 font-semibold text-primary hover:underline"
+                  className="ml-2 font-semibold text-main hover:underline"
                   href={route.auth.forgotPassword}
                 >
                   비밀번호 재설정

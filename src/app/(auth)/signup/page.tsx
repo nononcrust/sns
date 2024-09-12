@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { RadioGroup } from "@/components/ui/radio-group";
 import { route } from "@/constants/route";
 import { GoogleReCaptchaProvider } from "@/lib/recaptcha";
 import { authService } from "@/services/auth";
 import { recaptchaService } from "@/services/recaptcha";
-import { ErrorCode, isApiError } from "@/services/shared";
+import { ErrorCode } from "@/services/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { isAxiosError } from "axios";
+import { HTTPError } from "ky";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
@@ -28,18 +27,6 @@ export default function SignupPage() {
   );
 }
 
-enum UserType {
-  PERSONAL = "PERSONAL",
-  BUSINESS = "BUSINESS",
-  ETC = "ETC",
-}
-
-const USER_TYPE_LABEL: Record<UserType, string> = {
-  [UserType.PERSONAL]: "개인",
-  [UserType.BUSINESS]: "사업자",
-  [UserType.ETC]: "기타",
-};
-
 const signupFormSchema = z
   .object({
     email: z.string().email({ message: "올바른 이메일 형식을 입력해주세요." }),
@@ -47,10 +34,10 @@ const signupFormSchema = z
     password: z.string().min(8, { message: "비밀번호는 8자 이상이어야 합니다." }),
     passwordConfirm: z.string(),
     terms: z.boolean().refine((value) => value === true, { message: "약관에 동의해주세요." }),
-    type: z.nativeEnum(UserType),
   })
   .refine((data) => data.password === data.passwordConfirm, {
     message: "비밀번호가 일치하지 않습니다.",
+    path: ["passwordConfirm"],
   });
 
 const SignupForm = () => {
@@ -67,7 +54,6 @@ const SignupForm = () => {
       password: "",
       passwordConfirm: "",
       terms: false,
-      type: UserType.PERSONAL,
     },
   });
 
@@ -77,7 +63,10 @@ const SignupForm = () => {
 
   const { executeRecaptcha } = useGoogleReCaptcha();
 
-  const canSubmit = executeRecaptcha && !signupWithCredentialsMutation.isPending;
+  const canSubmit =
+    executeRecaptcha &&
+    !signupWithCredentialsMutation.isPending &&
+    !verifyRecaptchaMutation.isPending;
 
   const onSubmit = form.handleSubmit(async (data) => {
     if (!canSubmit) return;
@@ -94,9 +83,10 @@ const SignupForm = () => {
         onSuccess: () => {
           router.replace(redirect ?? route.auth.login);
         },
-        onError: (error: unknown) => {
-          if (isAxiosError(error) && isApiError(error.response?.data)) {
-            if (error.response.data.code === ErrorCode.EMAIL_ALREADY_EXISTS) {
+        onError: async (error: unknown) => {
+          if (error instanceof HTTPError) {
+            const code = await error.response.text();
+            if (code === ErrorCode.EMAIL_ALREADY_EXISTS) {
               toast.error("이미 존재하는 이메일입니다.");
             }
           }
@@ -123,20 +113,13 @@ const SignupForm = () => {
 
     const recaptchaToken = await executeRecaptcha();
 
-    verifyRecaptchaMutation.mutate(
-      {
-        json: { token: recaptchaToken, action: "submit" },
-      },
-      {
-        onSuccess: (data) => {
-          console.log("recaptcha success", data);
-        },
-      },
-    );
+    verifyRecaptchaMutation.mutate({
+      json: { token: recaptchaToken, action: "submit" },
+    });
   };
 
   return (
-    <main className="mx-auto flex h-dvh max-w-[280px] flex-col items-center justify-center">
+    <main className="mx-auto flex min-h-dvh max-w-[280px] flex-col items-center justify-center py-16">
       <Form {...form}>
         <form onSubmit={onSubmit} className="flex w-full flex-col gap-4">
           <Form.Field
@@ -196,30 +179,12 @@ const SignupForm = () => {
                   <Input
                     {...field}
                     type="password"
-                    error={!!form.formState.errors.password}
+                    error={!!form.formState.errors.passwordConfirm}
                     placeholder="비밀번호 확인"
                   />
                 </Form.Control>
                 <Form.Description>비밀번호를 한번 더 입력해주세요.</Form.Description>
                 <Form.ErrorMessage />
-              </Form.Item>
-            )}
-          />
-          <Form.Field
-            name="type"
-            control={form.control}
-            render={({ field }) => (
-              <Form.Item>
-                <Form.Label>유형</Form.Label>
-                <Form.Control>
-                  <RadioGroup value={field.value} onChange={field.onChange}>
-                    {Object.values(UserType).map((type) => (
-                      <RadioGroup.Item key={type} value={type}>
-                        {USER_TYPE_LABEL[type]}
-                      </RadioGroup.Item>
-                    ))}
-                  </RadioGroup>
-                </Form.Control>
               </Form.Item>
             )}
           />
@@ -249,7 +214,7 @@ const SignupForm = () => {
           <div className="flex justify-center gap-4">
             <button
               type="button"
-              className="flex size-10 items-center justify-center rounded-full border transition-colors hover:bg-gray-50"
+              className="flex size-10 items-center justify-center rounded-full border border-border bg-white transition-colors"
               onClick={onGoogleButtonClick}
             >
               <GoogleLogo />
@@ -259,7 +224,7 @@ const SignupForm = () => {
             <p className="text-[13px] font-medium text-sub">
               이미 계정이 있으신가요?
               <Link
-                className="ml-2 font-semibold text-primary hover:underline"
+                className="ml-2 font-semibold text-main hover:underline"
                 href={route.auth.login}
               >
                 로그인

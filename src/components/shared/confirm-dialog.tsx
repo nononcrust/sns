@@ -2,13 +2,20 @@ import { Button } from "../ui/button";
 import { Dialog } from "../ui/dialog";
 
 interface ConfirmDialogProps {
-  trigger: React.ReactNode;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  trigger?: React.ReactNode;
+  title?: string;
   onConfirm: () => void;
 }
 
-export const ConfirmDialog = ({ trigger, isOpen, onOpenChange, onConfirm }: ConfirmDialogProps) => {
+export const ConfirmDialog = ({
+  trigger,
+  isOpen,
+  title,
+  onOpenChange,
+  onConfirm,
+}: ConfirmDialogProps) => {
   const onConfirmButtonClick = () => {
     onConfirm();
     onOpenChange(false);
@@ -17,9 +24,9 @@ export const ConfirmDialog = ({ trigger, isOpen, onOpenChange, onConfirm }: Conf
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
-      <Dialog.Content>
-        <Dialog.Title>댓글을 삭제할까요?</Dialog.Title>
-        <Dialog.Footer className="mt-8">
+      <Dialog.Content className="w-[400px]">
+        <Dialog.Title>{title}</Dialog.Title>
+        <Dialog.Footer className="mt-8 flex justify-end gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             취소
           </Button>

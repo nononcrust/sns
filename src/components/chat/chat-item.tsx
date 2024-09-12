@@ -22,8 +22,8 @@ const ChatBubble = ({ isMe = false, children }: ChatBubbleProps) => {
   return (
     <div
       className={cn(
-        "flex h-8 items-center justify-center rounded-full border px-4 text-[13px] font-semibold",
-        isMe && "bg-black text-white",
+        "flex h-8 items-center justify-center rounded-full border border-border px-4 text-[13px] font-semibold",
+        isMe && "text-background bg-primary",
       )}
     >
       {children}

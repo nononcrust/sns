@@ -1,5 +1,6 @@
 "use client";
 
+import { ZoomableImage } from "@/components/shared/zoomable-image";
 import { Avatar } from "@/components/ui/avatar";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { route } from "@/constants/route";
@@ -7,6 +8,7 @@ import { useSession } from "@/features/auth/use-session";
 import { Editor } from "@/features/editor/editor";
 import { formatRelativeTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import copy from "copy-to-clipboard";
 import {
   EllipsisIcon,
   HeartIcon,
@@ -25,6 +27,11 @@ interface PostFeedItemProps {
   likeCount: number;
   liked: boolean;
   commentCount: number;
+  images: {
+    id: string;
+    url: string;
+    alt: string | null;
+  }[];
   author: {
     id: string;
     nickname: string;
@@ -44,6 +51,7 @@ export const PostFeedItem = (props: PostFeedItemProps) => {
     liked: initialLiked,
     likeCount: initialLikeCount,
     commentCount,
+    images,
   } = props;
 
   const [liked, setLiked] = useState(initialLiked);
@@ -56,15 +64,16 @@ export const PostFeedItem = (props: PostFeedItemProps) => {
   };
 
   return (
-    <li className="px-page flex flex-col py-6">
+    <li className="flex flex-col px-page py-6">
       <div className="flex w-full">
         <div className="flex flex-1 items-center gap-2">
           <Avatar className="size-10" asChild>
-            <Link href={route.profile({ userId: author.id })}>
+            <Link className="rounded-full" href={route.profile({ userId: author.id })}>
               <Avatar.Image
-                src={author.profileImageUrl ?? ""}
+                src={author.profileImageUrl}
                 alt={author.nickname + "의 프로필 이미지"}
               />
+              <Avatar.Fallback />
             </Link>
           </Avatar>
           <div className="flex flex-col">
@@ -79,7 +88,7 @@ export const PostFeedItem = (props: PostFeedItemProps) => {
         <div>
           <MoreActionsDropdownMenu
             trigger={
-              <button className="rounded-md p-1 hover:bg-content">
+              <button className="hover:bg-hover rounded-md p-1">
                 <EllipsisIcon className="size-4 text-sub" />
               </button>
             }
@@ -91,6 +100,16 @@ export const PostFeedItem = (props: PostFeedItemProps) => {
         {title}
       </Link>
       <Editor className="mt-4" mode="view" value={content} />
+      <div className="mt-4">
+        {images.map((image) => (
+          <ZoomableImage
+            className="rounded-3xl"
+            key={image.id}
+            src={image.url}
+            alt={image.alt ?? "게시글 이미지"}
+          />
+        ))}
+      </div>
       <div className="mt-4 flex justify-end gap-8">
         <button className="flex items-center gap-2 text-sub" onClick={onLikeButtonClick}>
           <HeartIcon className={cn("size-4", liked && "fill-red-500 stroke-red-500")} />
@@ -113,7 +132,7 @@ const MoreActionsDropdownMenu = ({ trigger, postId, author }: MoreActionsDropdow
   const { session } = useSession();
 
   const copyPostLinkToClipboard = () => {
-    navigator.clipboard.writeText(window.location.origin + route.post.detail({ postId }));
+    copy(window.location.origin + route.post.detail({ postId }));
     toast("게시글 링크가 복사되었습니다.");
   };
 

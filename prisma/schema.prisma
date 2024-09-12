@@ -14,10 +14,13 @@ model User {
   nickname     String  @unique
   profileImage String?
   role         Role    @default(USER)
+  locked      Boolean @default(false)
 
   credentials   Credentials?
   googleAccount GoogleAccount?
   kakaoAccount  KakaoAccount?
+
+  preferences UserPreferences?
 
   posts Post[]
   comments Comment[]
@@ -64,6 +67,19 @@ model KakaoAccount {
   updatedAt DateTime @updatedAt @db.Timestamptz()
 }
 
+model UserPreferences {
+  id      String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  darkMode Boolean @default(false)
+
+
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  updatedAt DateTime @updatedAt @db.Timestamptz()
+}
+
 model Post {
   id      String @id @default(cuid())
   title   String
@@ -77,6 +93,7 @@ model Post {
   comments Comment[]
   likes Like[]
   bookmarks Bookmark[]
+  images Image[]
 
   createdAt DateTime @default(now()) @db.Timestamptz()
   updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -123,6 +140,8 @@ model Comment {
   author   User   @relation(fields: [authorId], references: [id])
   authorId String
 
+  images Image[]
+
   createdAt DateTime @default(now()) @db.Timestamptz()
   updatedAt DateTime @updatedAt @db.Timestamptz()
 }
@@ -165,6 +184,19 @@ model Bookmark {
   createdAt DateTime @default(now()) @db.Timestamptz()
 
   @@unique ([userId, postId])
+}
+
+model Image {
+  id   String @id @default(cuid())
+
+  url  String
+  alt  String?
+
+  post Post? @relation(fields: [postId], references: [id])
+  postId String?
+
+  comment Comment? @relation(fields: [commentId], references: [id])
+  commentId String?
 }
 
 enum Role {

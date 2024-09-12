@@ -1,11 +1,13 @@
 import { getServerSession } from "@/features/auth/session";
 import { prisma } from "@/lib/prisma";
 
+import { storage, UploadFolder } from "@/lib/supabase";
 import { zValidator } from "@hono/zod-validator";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
+import { postImageFileSchema } from "./utils";
 
 export type GetPostsRequestQuery = z.infer<typeof GetPostsRequestQuery>;
 export const GetPostsRequestQuery = z.object({
@@ -19,6 +21,8 @@ type CreatePostRequestBody = z.infer<typeof CreatePostRequestBody>;
 const CreatePostRequestBody = z.object({
   title: z.string().min(1),
   content: z.string().min(1),
+  image: postImageFileSchema.optional(),
+  alt: z.string().min(1).optional(),
 });
 
 type UpdatePostRequestBody = z.infer<typeof UpdatePostRequestBody>;
@@ -30,6 +34,7 @@ const UpdatePostRequestBody = z.object({
 type CreateCommentRequestBody = z.infer<typeof CreateCommentRequestBody>;
 const CreateCommentRequestBody = z.object({
   content: z.string().min(1),
+  image: postImageFileSchema.optional(),
 });
 
 const defaultQuery = {
@@ -59,6 +64,7 @@ export const post = new Hono()
         },
       },
       include: {
+        images: true,
         author: true,
         likes: {
           include: {
@@ -111,6 +117,7 @@ export const post = new Hono()
         },
         include: {
           author: true,
+          images: true,
         },
       });
 
@@ -123,20 +130,30 @@ export const post = new Hono()
       throw new HTTPException(500, { message: "서버 에러" });
     }
   })
-  .post("/", zValidator("json", CreatePostRequestBody), async (c) => {
+  .post("/", zValidator("form", CreatePostRequestBody), async (c) => {
     const session = await getServerSession(c);
 
     if (!session) {
       throw new HTTPException(401, { message: "Unauthorized" });
     }
 
-    const body = c.req.valid("json");
+    const body = c.req.valid("form");
+
+    const uploadedImage = await storage.uploadFileIfExist(body.image ?? null, UploadFolder.POST);
 
     const post = await prisma.post.create({
       data: {
         title: body.title,
         content: body.content,
         authorId: session.userId,
+        ...(uploadedImage && {
+          images: {
+            create: {
+              url: storage.getPublicUrl(uploadedImage.path),
+              alt: body.alt,
+            },
+          },
+        }),
       },
     });
 
@@ -223,6 +240,7 @@ export const post = new Hono()
       },
       include: {
         author: true,
+        images: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -231,8 +249,8 @@ export const post = new Hono()
 
     return c.json(comments, 200);
   })
-  .post("/:id/comments", zValidator("json", CreateCommentRequestBody), async (c) => {
-    const body = c.req.valid("json");
+  .post("/:id/comments", zValidator("form", CreateCommentRequestBody), async (c) => {
+    const body = c.req.valid("form");
 
     const session = await getServerSession(c);
 
@@ -252,11 +270,20 @@ export const post = new Hono()
       throw new HTTPException(404, { message: "존재하지 않는 게시글입니다." });
     }
 
+    const uploadedImage = await storage.uploadFileIfExist(body.image ?? null, UploadFolder.COMMENT);
+
     const comment = await prisma.comment.create({
       data: {
         content: body.content,
         authorId: session.userId,
         postId: postId,
+        ...(uploadedImage && {
+          images: {
+            create: {
+              url: storage.getPublicUrl(uploadedImage.path),
+            },
+          },
+        }),
       },
     });
 

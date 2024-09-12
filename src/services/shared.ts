@@ -38,4 +38,8 @@ export const queryKey = {
   profile: "profile",
   recaptcha: "recaptcha",
   tag: "tag",
+  user: {
+    list: "user:list",
+    detail: "user:detail",
+  },
 } as const;

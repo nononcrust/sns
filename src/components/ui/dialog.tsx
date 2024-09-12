@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import * as DialogPrimitives from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 import React from "react";
+import { IconButton } from "./icon-button";
 
 const DialogRoot = DialogPrimitives.Root;
 
@@ -11,16 +12,22 @@ const DialogTrigger = DialogPrimitives.Trigger;
 
 const DialogPortal = DialogPrimitives.DialogPortal;
 
+interface DialogOverlayProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitives.Overlay> {
+  hideOverlay: boolean;
+}
+
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitives.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitives.Overlay>
->(({ className, ...props }, ref) => (
+  DialogOverlayProps
+>(({ className, hideOverlay, ...props }, ref) => (
   <DialogPrimitives.Overlay
     ref={ref}
     className={cn(
       "fixed inset-0 z-50 bg-black/40",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      hideOverlay && "bg-transparent",
       className,
     )}
     {...props}
@@ -28,34 +35,56 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = "Dialog.Overlay";
 
+interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitives.Content> {
+  hideCloseButton?: boolean;
+  hideOverlay?: boolean;
+  side?: "top" | "center";
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitives.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitives.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitives.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 sm:rounded-[24px] md:w-full",
-        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        "data-[state=open]:animate-in data-[state=closed]:animate-out",
-        "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
-        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      <DialogPrimitives.Close
-        className={cn("absolute right-4 top-4 rounded-lg p-1 disabled:pointer-events-none")}
-        aria-label="닫기"
+  DialogContentProps
+>(
+  (
+    {
+      className,
+      children,
+      hideCloseButton = false,
+      hideOverlay = false,
+      side = "center",
+      ...props
+    },
+    ref,
+  ) => (
+    <DialogPortal>
+      <DialogOverlay hideOverlay={hideOverlay} />
+      <DialogPrimitives.Content
+        ref={ref}
+        className={cn(
+          "bg-dialog fixed left-[50%] top-[50%] z-50 grid max-h-[calc(100dvh-32px)] w-full max-w-[calc(100vw-32px)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-[24px] border border-border p-6 shadow-lg",
+          "focus:outline-none",
+          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
+          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          side === "top" && "top-[32px] translate-y-0",
+          className,
+        )}
+        {...props}
       >
-        <XIcon className="h-5 w-5" />
-      </DialogPrimitives.Close>
-    </DialogPrimitives.Content>
-  </DialogPortal>
-));
+        {children}
+        {!hideCloseButton && (
+          <DialogPrimitives.Close asChild>
+            <IconButton className="absolute right-4 top-4" variant="ghost" aria-label="닫기">
+              <XIcon className="h-5 w-5" />
+            </IconButton>
+          </DialogPrimitives.Close>
+        )}
+      </DialogPrimitives.Content>
+    </DialogPortal>
+  ),
+);
 DialogContent.displayName = "Dialog.Content";
 
 const DialogHeader = ({ className, ...props }: React.ComponentPropsWithoutRef<"div">) => (
@@ -63,11 +92,10 @@ const DialogHeader = ({ className, ...props }: React.ComponentPropsWithoutRef<"d
 );
 
 const DialogFooter = ({ className, ...props }: React.ComponentPropsWithoutRef<"div">) => (
-  <div
-    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
-    {...props}
-  />
+  <div className={cn("flex", className)} {...props} />
 );
+
+const DialogClose = DialogPrimitives.Close;
 
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitives.Title>,
@@ -108,4 +136,5 @@ export const Dialog = Object.assign(DialogRoot, {
   Footer: DialogFooter,
   Title: DialogTitle,
   Description: DialogDescription,
+  Close: DialogClose,
 });

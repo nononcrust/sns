@@ -4,7 +4,7 @@ import { api } from "./shared";
 export const authService = {
   useSignupWithCredentials: () => {
     return useMutation({
-      mutationFn: api.auth.login.$post,
+      mutationFn: api.auth.signup.$post,
     });
   },
   useLoginWithGoogle: () => {

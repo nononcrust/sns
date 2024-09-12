@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, noop } from "@/lib/utils";
 import { AutoLinkNode, LinkNode } from "@lexical/link";
 import { InitialConfigType, LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -9,7 +9,8 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { EditorThemeClasses } from "lexical";
-import { AutoLinkPlugin, OnChangePlugin } from "./plugins";
+import { AutoLinkPlugin, OnChangePlugin, OnFocusPlugin } from "./plugins";
+import { initialEditorValue } from "./use-editor";
 
 const DEFAULT_PLACEHOLDER = "내용을 입력해주세요.";
 
@@ -25,6 +26,7 @@ interface EditorProps {
   placeholder?: string;
   value?: EditorValue;
   onChange?: (editorValue: EditorValue) => void;
+  onFocus?: () => void;
   mode?: "view" | "edit";
 }
 
@@ -32,7 +34,8 @@ export const Editor = ({
   placeholder = DEFAULT_PLACEHOLDER,
   className,
   value,
-  onChange = () => {},
+  onChange = noop,
+  onFocus = noop,
   mode = "edit",
 }: EditorProps) => {
   const initialConfig = {
@@ -43,6 +46,10 @@ export const Editor = ({
     editorState: value && value.length > 0 ? value : undefined,
     nodes: [LinkNode, AutoLinkNode],
   } satisfies InitialConfigType;
+
+  if (mode === "view" && value === initialEditorValue) {
+    return null;
+  }
 
   return (
     <div className={cn("relative", className)}>
@@ -56,6 +63,7 @@ export const Editor = ({
         <LinkPlugin />
         <AutoLinkPlugin />
         <OnChangePlugin onChange={onChange} mode={mode} />
+        <OnFocusPlugin onFocus={onFocus} />
       </LexicalComposer>
     </div>
   );

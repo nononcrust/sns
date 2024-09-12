@@ -94,7 +94,9 @@ export const auth = new Hono()
       return c.json(user, 201);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new HTTPException(400, { message: "이미 존재하는 이메일입니다." });
+        throw new HTTPException(400, {
+          message: ErrorCode.EMAIL_ALREADY_EXISTS,
+        });
       }
     }
   })

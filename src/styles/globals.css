@@ -7,9 +7,67 @@
   scrollbar-color: #d1d5db white;
 }
 
+.dark {
+  scrollbar-color: #6b6b6b #2c2c2c;
+}
+
 @layer base {
+  :root {
+    --primary: theme("colors.black");
+    --primary-dark: theme("colors.black");
+    --primary-light: theme("colors.black");
+    --primary-lighter: theme("colors.black");
+    --ring: theme("colors.gray.400");
+    --success: theme("colors.green.500");
+    --success-light: theme("colors.green.400");
+    --error: theme("colors.red.500");
+    --error-light: theme("colors.red.400");
+    --error-lighter: theme("colors.red.50");
+    --main: theme("colors.gray.800");
+    --sub: theme("colors.gray.500");
+    --subtle: theme("colors.gray.400");
+    --border: theme("colors.gray.200");
+    --hover: theme("colors.gray.50");
+
+    --content: theme("colors.gray.50");
+    --background: theme("colors.white");
+    --dialog: theme("colors.white");
+    --popover: theme("colors.white");
+    --switch: theme("colors.gray.200");
+  }
+
+  .dark {
+    --primary: theme("colors.black");
+    --primary-dark: theme("colors.black");
+    --primary-light: theme("colors.black");
+    --primary-lighter: theme("colors.black");
+    --ring: #6b6b6b;
+    --success: theme("colors.green.500");
+    --success-light: theme("colors.green.400");
+    --error: theme("colors.red.500");
+    --error-light: theme("colors.red.400");
+    --error-lighter: theme("colors.red.50");
+    --main: #fafafa;
+    --sub: #a1a1a1;
+    --subtle: #666666;
+    --border: #444444;
+    --hover: #333333;
+
+    --content: #333333;
+    --background: #222222;
+    --dialog: #2b2b2b;
+    --popover: #2b2b2b;
+    --switch: #333333;
+  }
+}
+
+@layer base {
+  input {
+    @apply bg-transparent;
+  }
+
   body {
-    @apply bg-white text-main;
+    @apply bg-background border-border text-main;
   }
 
   button:not([role="checkbox"]),
@@ -18,7 +76,7 @@
   }
 
   .focus-ring {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-white;
+    @apply ring-offset-background outline-none ring-2 ring-ring ring-offset-2;
   }
 
   .focus-input-ring {

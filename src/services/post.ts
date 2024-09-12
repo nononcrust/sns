@@ -30,7 +30,7 @@ export const postService = {
   },
   usePostDetail: (postId: string) => {
     return useQuery({
-      queryKey: [queryKey, postId],
+      queryKey: [queryKey.post, postId],
       queryFn: async () => {
         const response = await api.posts[":id"].$get({ param: { id: postId } });
         return await response.json();

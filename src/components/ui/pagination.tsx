@@ -158,7 +158,7 @@ const PaginationButton = ({ className, children, ...props }: PaginationButtonPro
   return (
     <button
       className={cn(
-        "flex size-8 items-center justify-center rounded-lg border transition-colors hover:bg-gray-50",
+        "hover:bg-hover flex size-8 items-center justify-center rounded-lg border border-border transition-colors",
         "disabled:cursor-default disabled:select-none disabled:opacity-50",
         className,
       )}

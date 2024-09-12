@@ -14,6 +14,7 @@ export const route = {
   profile: (params: { userId: string }) => `/profile/${params.userId}`,
   account: {
     profile: "/profile",
+    settings: "/profile/settings",
   },
   post: {
     list: "/posts",

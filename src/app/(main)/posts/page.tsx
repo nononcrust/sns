@@ -4,7 +4,6 @@ import { ProtectedAction } from "@/components/shared/protected-action";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { route } from "@/constants/route";
-import { useSession } from "@/features/auth/use-session";
 import { postService } from "@/services/post";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -19,18 +18,16 @@ export default function PostListPage() {
     page: page,
   });
 
-  const { session } = useSession();
-
   return (
     <main className="container flex min-h-dvh w-full flex-col pb-12">
-      <div className="mt-12 flex justify-end">
+      <div className="mt-12 flex justify-end px-page">
         <ProtectedAction>
           <Button asChild variant="outlined">
             <Link href={route.post.create}>게시글 작성</Link>
           </Button>
         </ProtectedAction>
       </div>
-      <ul className="mt-4 flex flex-col divide-y divide-divider">
+      <ul className="mt-4 flex flex-col divide-y divide-border">
         {postData?.posts.map((post) => (
           <PostListItem
             key={post.id}
@@ -42,6 +39,7 @@ export default function PostListPage() {
             createdAt={post.createdAt.toString()}
             commentCount={post._count.comments}
             view={post.view}
+            hasImage={post.images.length > 0}
           />
         ))}
       </ul>

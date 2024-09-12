@@ -7,10 +7,10 @@ interface SelectProps extends React.ComponentPropsWithoutRef<"select"> {}
 const SelectImpl = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, children, ...props }, ref) => {
     return (
-      <div className={cn("relative flex items-center rounded-lg border", className)}>
+      <div className={cn("relative flex items-center rounded-lg border border-border", className)}>
         <select
           className={cn(
-            "h-8 cursor-pointer appearance-none rounded-lg px-3 pr-7 text-[13px] font-medium transition-colors hover:bg-gray-50",
+            "hover:bg-hover h-8 cursor-pointer appearance-none rounded-lg bg-transparent px-3 pr-7 text-[13px] font-medium transition-colors",
             "focus-visible:focus-ring",
           )}
           ref={ref}

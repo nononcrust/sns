@@ -1,9 +1,11 @@
+import { ImageInput } from "@/components/shared/image-input";
+import { ImagePreview } from "@/components/shared/image-preview";
 import { Button } from "@/components/ui/button";
 import { Editor } from "@/features/editor/editor";
 import { initialEditorValue, useEditor } from "@/features/editor/use-editor";
+import { useImageInput } from "@/hooks/use-image-input";
 import { cn } from "@/lib/utils";
 import { postService } from "@/services/post";
-import { ImageIcon } from "lucide-react";
 
 interface CommentInputProps {
   className?: string;
@@ -13,6 +15,8 @@ interface CommentInputProps {
 export const CommentInput = ({ className, postId }: CommentInputProps) => {
   const editor = useEditor();
 
+  const imageInput = useImageInput();
+
   const createCommentMutation = postService.useCreateComment();
 
   const onSubmit = () => {
@@ -20,8 +24,9 @@ export const CommentInput = ({ className, postId }: CommentInputProps) => {
 
     createCommentMutation.mutate(
       {
-        json: {
+        form: {
           content: editor.value,
+          ...(imageInput.value && { image: imageInput.value }),
         },
         param: {
           id: postId,
@@ -30,19 +35,28 @@ export const CommentInput = ({ className, postId }: CommentInputProps) => {
       {
         onSuccess: () => {
           editor.reset();
+          imageInput.reset();
         },
       },
     );
   };
 
-  const canSubmit = editor.value !== initialEditorValue && !createCommentMutation.isPending;
+  const isEmpty = editor.value === initialEditorValue && !imageInput.value;
+
+  const canSubmit = !isEmpty && !createCommentMutation.isPending;
 
   return (
     <div className={cn("flex flex-col", className)}>
       <div className="rounded-xl bg-content p-3 px-4">
         <Editor value={editor.value} onChange={editor.onChange} key={editor.key} />
+        <ImagePreview
+          className="mt-4 w-1/2"
+          value={imageInput.value}
+          onRemove={imageInput.onRemove}
+          buttonRef={imageInput.buttonRef}
+        />
         <div className="mt-4 flex items-center justify-between">
-          <ImageIcon className="text-subtle size-6" />
+          <ImageInput onChange={imageInput.onChange} buttonRef={imageInput.buttonRef} />
           <div className="flex gap-2">
             <Button disabled={!canSubmit} variant="outlined" onClick={onSubmit}>
               댓글 달기

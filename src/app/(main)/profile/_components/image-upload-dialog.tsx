@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { Image } from "@/components/ui/image";
+import { fileConfig } from "@/configs/file";
 import { testId } from "@/constants/test";
 import { useDialog } from "@/hooks/use-dialog";
 import { useFileInput } from "@/hooks/use-file-input";
 import { profileService } from "@/services/profile";
 import { UploadIcon } from "lucide-react";
 import { useRef } from "react";
-
-const allowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
 
 interface ImageUploadDialogProps {
   trigger: React.ReactNode;
@@ -47,12 +47,12 @@ const Dropzone = ({ value, onChange }: DropzoneProps) => {
   return (
     <div className="flex flex-col items-center">
       <button
-        className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-gray-100"
+        className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-content"
         onClick={onDropzoneClick}
       >
         {value === null && <UploadIcon className="text-sub" />}
         {value && (
-          <img src={URL.createObjectURL(value)} alt="" className="h-32 w-32 rounded-full" />
+          <Image src={URL.createObjectURL(value)} alt="" className="h-32 w-32 rounded-full" />
         )}
       </button>
       <input
@@ -60,7 +60,7 @@ const Dropzone = ({ value, onChange }: DropzoneProps) => {
         className="hidden"
         ref={inputRef}
         onChange={onInputChange}
-        accept={allowedImageTypes.join(",")}
+        accept={fileConfig.allowedImageTypes.profile}
         data-testid={testId.profileImageInput}
       />
     </div>
@@ -93,14 +93,14 @@ const DialogContent = ({ dialog }: DialogContentProps) => {
   const submitButtonDisabled = updateProfileImageMutation.isPending || !fileInput.value;
 
   return (
-    <Dialog.Content>
+    <Dialog.Content className="w-[600px]">
       <Dialog.Header>
         <Dialog.Title>프로필 사진 변경</Dialog.Title>
       </Dialog.Header>
-      <Dialog.Body>
+      <Dialog.Body className="py-4">
         <Dropzone value={fileInput.value} onChange={fileInput.onChange} />
       </Dialog.Body>
-      <Dialog.Footer>
+      <Dialog.Footer className="justify-end gap-2">
         <Button variant="ghost" onClick={dialog.close}>
           취소
         </Button>

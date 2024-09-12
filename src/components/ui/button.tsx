@@ -12,9 +12,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: "bg-primary text-white hover:bg-primary-dark",
-        outlined: "border hover:bg-gray-50 bg-white",
-        ghost: "hover:bg-gray-50",
-        error: "",
+        outlined: "border border-border hover:bg-hover bg-background",
+        ghost: "hover:bg-hover bg-transparent",
+        error: "bg-error text-white hover:bg-error-dark",
+        errorOutlined: "border-error border hover:bg-hover bg-background text-error",
       },
       size: {
         small: "h-7 text-[12px] px-2",
