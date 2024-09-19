@@ -10,7 +10,6 @@ const nextConfig = {
       },
     ],
   },
-  serverExternalPackages: ["argon2"],
 };
 
 export default nextConfig;
