@@ -43,7 +43,7 @@
     "ky": "^1.7.2",
     "lexical": "^0.17.1",
     "lucide-react": "^0.404.0",
-    "next": "14.2.4",
+    "next": "^14.2.12",
     "next-themes": "^0.3.0",
     "react": "^18",
     "react-dom": "^18",
