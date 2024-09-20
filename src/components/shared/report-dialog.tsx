@@ -39,7 +39,7 @@ export const ReportDialog = ({ isOpen, onOpenChange, id, type }: ReportDialogPro
 
   const onSuccess = () => {
     onOpenChange(false);
-    toast.success("신고가 접수되었습니다.");
+    toast.success("신고가 완료되었습니다.");
   };
 
   const reportPost = () => {

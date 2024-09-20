@@ -13,6 +13,15 @@ export const profile = new Hono()
       where: {
         id: session.userId,
       },
+      include: {
+        settings: {
+          select: {
+            followNotification: true,
+            commentNotification: true,
+            likeNotification: true,
+          },
+        },
+      },
     });
 
     return c.json(user, 200);

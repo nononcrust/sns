@@ -142,7 +142,13 @@ export const useCommand = () => {
 
     if (!selectedItem) return null;
 
-    return selectedItem.nextElementSibling as HTMLElement | null;
+    const nextElement = selectedItem.nextElementSibling;
+
+    if (nextElement instanceof HTMLElement) {
+      return nextElement;
+    }
+
+    return null;
   }, [getSelectedItem]);
 
   const getPrevItem = useCallback(() => {
@@ -150,8 +156,20 @@ export const useCommand = () => {
 
     if (!selectedItem) return null;
 
-    return selectedItem.previousElementSibling as HTMLElement | null;
+    const prevElement = selectedItem.previousElementSibling;
+
+    if (prevElement instanceof HTMLElement) {
+      return prevElement;
+    }
+
+    return null;
   }, [getSelectedItem]);
+
+  const selectItemWithKeyboard = (item: HTMLElement) => {
+    setSelectedItem(item);
+
+    item.scrollIntoView({ block: "nearest" });
+  };
 
   const onArrowUp = useCallback(() => {
     const selectedItem = getSelectedItem();
@@ -160,14 +178,14 @@ export const useCommand = () => {
       const firstItem = getFirstItem();
 
       if (firstItem) {
-        return setSelectedItem(firstItem);
+        return selectItemWithKeyboard(firstItem);
       }
     }
 
     const prevItem = getPrevItem();
 
     if (prevItem) {
-      setSelectedItem(prevItem);
+      selectItemWithKeyboard(prevItem);
     }
   }, [getFirstItem, getPrevItem, getSelectedItem, setSelectedItem]);
 
@@ -186,14 +204,14 @@ export const useCommand = () => {
       const firstItem = getFirstItem();
 
       if (firstItem) {
-        return setSelectedItem(firstItem);
+        return selectItemWithKeyboard(firstItem);
       }
     }
 
     const nextItem = getNextItem();
 
     if (nextItem) {
-      setSelectedItem(nextItem);
+      selectItemWithKeyboard(nextItem);
     }
   }, [getFirstItem, getSelectedItem, getNextItem, setSelectedItem]);
 

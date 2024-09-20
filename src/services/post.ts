@@ -1,4 +1,4 @@
-import { GetPostsRequestQuery } from "@/server/post";
+import { GetPostsRequestQuery } from "@/server/utils";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, queryKey } from "./shared";
 
@@ -90,6 +90,16 @@ export const postService = {
   useReportPost: () => {
     return useMutation({
       mutationFn: api.posts[":id"].report.$post,
+    });
+  },
+  useLikePost: () => {
+    return useMutation({
+      mutationFn: api.posts[":id"].like.$post,
+    });
+  },
+  useUnlikePost: () => {
+    return useMutation({
+      mutationFn: api.posts[":id"].like.$delete,
     });
   },
 };

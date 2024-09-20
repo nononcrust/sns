@@ -5,11 +5,12 @@ import { ZoomableImage } from "@/components/shared/zoomable-image";
 import { Avatar } from "@/components/ui/avatar";
 import { route } from "@/constants/route";
 import { Editor } from "@/features/editor/editor";
+import { useRequireLogin } from "@/hooks/use-require-login";
+import { useToggleLike } from "@/hooks/use-toggle-like";
 import { formatRelativeTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { EllipsisIcon, HeartIcon, MessageSquareIcon } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 interface PostFeedItemProps {
   postId: string;
@@ -43,13 +44,18 @@ export const PostFeedItem = ({
   commentCount,
   images,
 }: PostFeedItemProps) => {
-  const [liked, setLiked] = useState(initialLiked);
-  const [likeCount, setLikeCount] = useState(initialLikeCount);
+  const { requireLogin } = useRequireLogin();
 
-  const onLikeButtonClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+  const { isLiked, likeCount, toggleLike } = useToggleLike({
+    initialIsLiked: initialLiked,
+    initialLikeCount: initialLikeCount,
+    postId,
+  });
+
+  const onLikeToggleButtonClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     event.stopPropagation();
-    setLiked((prev) => !prev);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+
+    requireLogin(toggleLike);
   };
 
   return (
@@ -79,7 +85,7 @@ export const PostFeedItem = ({
             postId={postId}
             authorId={author.id}
             trigger={
-              <button className="hover:bg-hover rounded-md p-1">
+              <button className="rounded-md p-1 hover:bg-hover">
                 <EllipsisIcon className="size-4 text-sub" />
               </button>
             }
@@ -102,11 +108,13 @@ export const PostFeedItem = ({
       </div>
       <div className="mt-4 flex justify-end gap-6">
         <button
-          className="hover:bg-hover flex items-center gap-2 rounded-md px-2 py-0.5 text-sub"
-          onClick={onLikeButtonClick}
+          className="flex items-center gap-2 rounded-md px-2 py-0.5 text-sub hover:bg-hover"
+          onClick={onLikeToggleButtonClick}
         >
-          <HeartIcon className={cn("size-4", liked && "fill-red-500 stroke-red-500")} />
-          <span className={cn("text-[13px]", liked && "text-red-500")}>{likeCount}</span>
+          <HeartIcon
+            className={cn("size-4", isLiked && "animate-appear fill-red-500 stroke-red-500")}
+          />
+          <span className={cn("text-[13px]", isLiked && "text-red-500")}>{likeCount}</span>
         </button>
         <div className="flex items-center gap-2 text-sub">
           <MessageSquareIcon className="size-4" />

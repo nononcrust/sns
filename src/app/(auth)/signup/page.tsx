@@ -1,6 +1,6 @@
 "use client";
 
-import GoogleLogo from "@/assets/icons/google-logo.svg";
+import googleLogo from "@/assets/icons/google-logo.svg";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form } from "@/components/ui/form";
@@ -217,7 +217,7 @@ const SignupForm = () => {
               className="flex size-10 items-center justify-center rounded-full border border-border bg-white transition-colors"
               onClick={onGoogleButtonClick}
             >
-              <GoogleLogo />
+              <img src={googleLogo.src} alt="구글 로고" />
             </button>
           </div>
           <div className="flex justify-center">

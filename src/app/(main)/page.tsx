@@ -1,9 +1,8 @@
 "use client";
 
 import { IntersectionObserver } from "@/components/shared/intersection-observer";
-import { useSession } from "@/features/auth/use-session";
 import { postService } from "@/services/post";
-import { PostFeedItem } from "./_components/post-feed-item";
+import { PostFeedItem } from "../../components/shared/post-feed-item";
 import { NewPost } from "./posts/_components/new-post";
 
 export default function HomePage() {
@@ -13,8 +12,6 @@ export default function HomePage() {
     fetchNextPage,
     hasNextPage,
   } = postService.useInfinitePosts();
-
-  const { session } = useSession();
 
   const onIntersect = () => {
     if (isFetchingNextPage) return;
@@ -46,8 +43,8 @@ export default function HomePage() {
               }))}
               createdAt={post.createdAt.toString()}
               commentCount={post._count.comments}
-              liked={!!session && post.likes.some((like) => like.userId === session.user.id)}
-              likeCount={post.likes.length}
+              liked={post.isLiked}
+              likeCount={post._count.likes}
             />
           ))}
         </ul>

@@ -4,14 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useSession } from "@/features/auth/use-session";
+import { profileService } from "@/services/profile";
 import { useTheme } from "next-themes";
+import { useState } from "react";
 
 export default function SettingsPage() {
   const { session } = useSession();
 
+  const { data: profile } = profileService.useProfile();
+
   const { theme, setTheme } = useTheme();
 
-  if (!session) return null;
+  if (!session || !profile || !profile.settings) return null;
 
   return (
     <main className="container min-h-dvh border-x border-border px-page pt-12">
@@ -34,15 +38,11 @@ export default function SettingsPage() {
         </SettingItem>
       </SettingGroup>
       <SettingGroup title="알림">
-        <SettingItem title="새로운 팔로워" description="새로운 팔로워가 생겼을 때 알림을 받습니다.">
-          <Switch />
-        </SettingItem>
-        <SettingItem title="새로운 댓글" description="새로운 댓글이 달렸을 때 알림을 받습니다.">
-          <Switch />
-        </SettingItem>
-        <SettingItem title="게시글 추천" description="게시글에 좋아요가 눌렸을 때 알림을 받습니다.">
-          <Switch />
-        </SettingItem>
+        <NotificationSettings
+          followNotification={profile.settings.followNotification}
+          commentNotification={profile.settings.commentNotification}
+          likeNotification={profile.settings.likeNotification}
+        />
       </SettingGroup>
       <SettingGroup title="기타">
         <SettingItem title="회원 탈퇴">
@@ -90,5 +90,47 @@ const SettingItem = ({ title, description, children }: SettingItemProps) => {
       </div>
       {children}
     </div>
+  );
+};
+
+interface NotificationSettingsProps {
+  followNotification: boolean;
+  commentNotification: boolean;
+  likeNotification: boolean;
+}
+
+const NotificationSettings = ({
+  followNotification: initialFollowNotification,
+  commentNotification: initialCommentNotification,
+  likeNotification: initialLikeNotification,
+}: NotificationSettingsProps) => {
+  const [followNotification, setFollowNotification] = useState(initialFollowNotification);
+  const [commentNotification, setCommentNotification] = useState(initialCommentNotification);
+  const [likeNotification, setLikeNotification] = useState(initialLikeNotification);
+
+  const onFollowNotificationChange = async (checked: boolean) => {
+    setFollowNotification(checked);
+  };
+
+  const onCommentNotificationChange = async (checked: boolean) => {
+    setCommentNotification(checked);
+  };
+
+  const onLikeNotificationChange = async (checked: boolean) => {
+    setLikeNotification(checked);
+  };
+
+  return (
+    <>
+      <SettingItem title="새로운 팔로워" description="새로운 팔로워가 생겼을 때 알림을 받습니다.">
+        <Switch checked={followNotification} onChange={onFollowNotificationChange} />
+      </SettingItem>
+      <SettingItem title="새로운 댓글" description="새로운 댓글이 달렸을 때 알림을 받습니다.">
+        <Switch checked={commentNotification} onChange={onCommentNotificationChange} />
+      </SettingItem>
+      <SettingItem title="새로운 좋아요" description="게시글에 좋아요가 눌렸을 때 알림을 받습니다.">
+        <Switch checked={likeNotification} onChange={onLikeNotificationChange} />
+      </SettingItem>
+    </>
   );
 };

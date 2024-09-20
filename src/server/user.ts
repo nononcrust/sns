@@ -1,8 +1,10 @@
+import { getServerSession } from "@/features/auth/session";
 import { prisma } from "@/lib/prisma";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
+import { GetPostsRequestQuery } from "./utils";
 
 export type GetUsersRequestQuery = z.infer<typeof GetUsersRequestQuery>;
 const GetUsersRequestQuery = z.object({
@@ -39,27 +41,68 @@ export const user = new Hono()
 
     return c.json(user, 200);
   })
-  .get("/:id/posts", async (c) => {
+  .get("/:id/posts", zValidator("query", GetPostsRequestQuery), async (c) => {
     const userId = c.req.param("id");
 
+    const queryParams = c.req.valid("query");
+
+    const session = await getServerSession(c);
+
+    const query = {
+      page: queryParams.page ?? "1",
+      limit: queryParams.limit ?? "10",
+      search: queryParams.search ?? "",
+      tags: queryParams.tags ?? [],
+    };
+
     const posts = await prisma.post.findMany({
-      skip: 0,
-      take: 10,
+      take: Number(query.limit),
+      skip: (Number(query.page) - 1) * Number(query.limit),
       where: {
         authorId: userId,
+        title: {
+          contains: query.search,
+        },
+      },
+      include: {
+        images: true,
+        author: true,
+        likes: session
+          ? {
+              where: {
+                userId: session.userId,
+              },
+              select: {
+                id: true,
+              },
+            }
+          : false,
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
+    const postCount = await prisma.post.count();
 
-    const count = await prisma.post.count({
-      where: {
-        authorId: userId,
-      },
+    const postsWithLike = posts.map((post) => {
+      const { likes, ...rest } = post;
+
+      return {
+        ...rest,
+        isLiked: likes?.length > 0,
+      };
     });
 
     return c.json(
       {
-        posts: posts,
-        total: count,
+        posts: postsWithLike,
+        total: postCount,
       },
       200,
     );

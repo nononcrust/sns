@@ -1,6 +1,7 @@
 "use client";
 
 import { SessionProvider } from "@/features/auth/session-provider";
+import { GlobalDialogProvider } from "@/features/dialog/global-dialog";
 import { ThemeProvider } from "@/features/theme/theme-provider";
 import { Toaster } from "@/features/toast/toaster";
 import { queryClientConfig } from "@/services/config";
@@ -14,8 +15,10 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
-          {children}
-          <Toaster />
+          <GlobalDialogProvider>
+            {children}
+            <Toaster />
+          </GlobalDialogProvider>
         </SessionProvider>
       </QueryClientProvider>
     </ThemeProvider>

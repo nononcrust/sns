@@ -3,6 +3,7 @@ import { logger } from "hono/logger";
 import { auth } from "./auth";
 import { comment } from "./comment";
 import { following } from "./following";
+import { og } from "./og";
 import { post } from "./post";
 import { profile } from "./profile";
 import { user } from "./user";
@@ -15,6 +16,7 @@ export const app = new Hono()
   .route("/auth", auth)
   .route("/profile", profile)
   .route("/users", user)
-  .route("/user/following", following);
+  .route("/user/following", following)
+  .route("/og", og);
 
 export type App = typeof app;

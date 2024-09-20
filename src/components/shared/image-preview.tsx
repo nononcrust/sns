@@ -37,7 +37,7 @@ export const ImagePreview = ({ className, value, onRemove, alt, buttonRef }: Ima
 
   return (
     <div className={cn("relative overflow-hidden rounded-2xl border border-border", className)}>
-      <Image src={URL.createObjectURL(value)} alt={alt?.value} />
+      <Image className="h-full w-full" src={URL.createObjectURL(value)} alt={alt?.value} />
       <button
         className="absolute left-4 top-4 flex size-6 items-center justify-center rounded-full bg-black"
         onClick={onRemoveButtonClick}

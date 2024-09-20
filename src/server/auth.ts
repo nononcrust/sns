@@ -79,7 +79,7 @@ export const auth = new Hono()
 
       const hashedPassword = await hash.create(body.password);
 
-      const user = await prisma.user.create({
+      const newUser = await prisma.user.create({
         data: {
           nickname: body.nickname,
           email: body.email,
@@ -88,10 +88,13 @@ export const auth = new Hono()
               password: hashedPassword,
             },
           },
+          settings: {
+            create: true,
+          },
         },
       });
 
-      return c.json(user, 201);
+      return c.json(newUser, 201);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
         throw new HTTPException(400, {
@@ -152,12 +155,12 @@ export const auth = new Hono()
       const sessionToken = sessionTokens(c);
 
       const response = await googleApi.getAccessToken(searchParams.code);
-      const userInfo = await googleApi.getUserInfo(response.access_token);
+      const googleUserInfo = await googleApi.getUserInfo(response.access_token);
 
       const existingUser = await prisma.user.findFirst({
         where: {
           googleAccount: {
-            googleId: userInfo.id,
+            googleId: googleUserInfo.id,
           },
         },
       });
@@ -172,7 +175,7 @@ export const auth = new Hono()
 
       const userWithSameEmail = await prisma.user.findFirst({
         where: {
-          email: userInfo.email,
+          email: googleUserInfo.email,
         },
       });
 
@@ -182,13 +185,16 @@ export const auth = new Hono()
 
       const newUser = await prisma.user.create({
         data: {
-          nickname: userInfo.name,
-          email: userInfo.email,
-          profileImage: userInfo.picture,
+          nickname: googleUserInfo.name,
+          email: googleUserInfo.email,
+          profileImage: googleUserInfo.picture,
           googleAccount: {
             create: {
-              googleId: userInfo.id,
+              googleId: googleUserInfo.id,
             },
+          },
+          settings: {
+            create: true,
           },
         },
       });

@@ -26,20 +26,6 @@ export const UserSearchDialog = ({ trigger }: UserSearchDialogProps) => {
         className="w-[600px] gap-0 rounded-lg p-0"
       >
         <Content />
-        <Dialog.Footer className="flex justify-end gap-4 px-page py-2">
-          <Shortcut label="위로 이동하기">
-            <ArrowUpIcon />
-          </Shortcut>
-          <Shortcut label="아래로 이동하기">
-            <ArrowDownIcon />
-          </Shortcut>
-          <Shortcut label="프로필 보기">
-            <CornerDownLeftIcon />
-          </Shortcut>
-          <Shortcut label="닫기">
-            <span>ESC</span>
-          </Shortcut>
-        </Dialog.Footer>
       </Dialog.Content>
     </Dialog>
   );
@@ -52,9 +38,25 @@ const Content = () => {
   return (
     <Command>
       <SearchInput value={searchInput.value} onChange={searchInput.onChange} />
-      {debouncedSearchValue.length > 0 && searchInput.value.length > 0 && (
-        <SearchResult value={debouncedSearchValue} />
-      )}
+      <div className="h-[400px]">
+        {debouncedSearchValue.length > 0 && searchInput.value.length > 0 && (
+          <SearchResult value={debouncedSearchValue} />
+        )}
+      </div>
+      <Dialog.Footer className="flex justify-end gap-4 px-page py-2">
+        <Shortcut label="위로 이동하기">
+          <ArrowUpIcon />
+        </Shortcut>
+        <Shortcut label="아래로 이동하기">
+          <ArrowDownIcon />
+        </Shortcut>
+        <Shortcut label="프로필 보기">
+          <CornerDownLeftIcon />
+        </Shortcut>
+        <Shortcut label="닫기">
+          <span>ESC</span>
+        </Shortcut>
+      </Dialog.Footer>
     </Command>
   );
 };
@@ -83,9 +85,13 @@ interface SearchResultProps {
 }
 
 const SearchResult = ({ value }: SearchResultProps) => {
-  const { data: users } = userService.useUsers({
+  const { data: users, isPending } = userService.useUsers({
     search: value,
   });
+
+  if (isPending) {
+    return <Skeleton />;
+  }
 
   if (!users) {
     return null;
@@ -93,12 +99,14 @@ const SearchResult = ({ value }: SearchResultProps) => {
 
   if (users.length === 0) {
     return (
-      <div className="mb-8 py-10 text-center text-sm text-subtle">검색된 유저가 없습니다.</div>
+      <div className="flex h-full items-center justify-center text-sm text-subtle">
+        검색된 유저가 없습니다.
+      </div>
     );
   }
 
   return (
-    <div className="max-h-[400px] overflow-y-auto pt-2">
+    <div className="scrollbar-hide h-[400px] overflow-y-auto pt-2">
       <GroupTitle>검색된 유저</GroupTitle>
       <Command.List className="flex flex-col gap-2 p-2 pr-1 pt-0">
         {users.map((user) => (
@@ -188,4 +196,8 @@ const HighlightedText = ({ text, highlight }: HighlightedTextProps) => {
       ))}
     </span>
   );
+};
+
+const Skeleton = () => {
+  return null;
 };

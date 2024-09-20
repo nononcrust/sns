@@ -8,15 +8,7 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { postImageFileSchema } from "./utils";
-
-export type GetPostsRequestQuery = z.infer<typeof GetPostsRequestQuery>;
-export const GetPostsRequestQuery = z.object({
-  page: z.string().default("1").optional(),
-  limit: z.string().default("10").optional(),
-  search: z.string().default("").optional(),
-  tags: z.array(z.string()).default([]).optional(),
-});
+import { GetPostsRequestQuery, postImageFileSchema } from "./utils";
 
 type CreatePostRequestBody = z.infer<typeof CreatePostRequestBody>;
 const CreatePostRequestBody = z.object({
@@ -74,18 +66,20 @@ export const post = new Hono()
       include: {
         images: true,
         author: true,
-        likes: {
-          include: {
-            user: {
+        likes: session
+          ? {
+              where: {
+                userId: session.userId,
+              },
               select: {
                 id: true,
               },
-            },
-          },
-        },
+            }
+          : false,
         _count: {
           select: {
             comments: true,
+            likes: true,
           },
         },
       },
@@ -96,9 +90,18 @@ export const post = new Hono()
 
     const postCount = await prisma.post.count();
 
+    const postsWithLike = posts.map((post) => {
+      const { likes, ...rest } = post;
+
+      return {
+        ...rest,
+        isLiked: likes?.length > 0,
+      };
+    });
+
     return c.json(
       {
-        posts: posts,
+        posts: postsWithLike,
         total: postCount,
       },
       200,
@@ -331,4 +334,73 @@ export const post = new Hono()
     });
 
     return c.json(report, 201);
+  })
+  .post("/:id/like", async (c) => {
+    const postId = c.req.param("id");
+
+    const session = await getAuthenticatedServerSession(c);
+
+    const post = await prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+    });
+
+    if (!post) {
+      throw new HTTPException(404, { message: "존재하지 않는 게시글입니다." });
+    }
+
+    const like = await prisma.like.findFirst({
+      where: {
+        postId: postId,
+        userId: session.userId,
+      },
+    });
+
+    if (like) {
+      throw new HTTPException(400, { message: "이미 좋아요를 누른 게시글입니다." });
+    }
+
+    await prisma.like.create({
+      data: {
+        postId: postId,
+        userId: session.userId,
+      },
+    });
+
+    return c.json("좋아요가 등록되었습니다.", 201);
+  })
+  .delete("/:id/like", async (c) => {
+    const postId = c.req.param("id");
+
+    const session = await getAuthenticatedServerSession(c);
+
+    const post = await prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+    });
+
+    if (!post) {
+      throw new HTTPException(404, { message: "존재하지 않는 게시글입니다." });
+    }
+
+    const like = await prisma.like.findFirst({
+      where: {
+        postId: postId,
+        userId: session.userId,
+      },
+    });
+
+    if (!like) {
+      throw new HTTPException(400, { message: "좋아요를 누르지 않은 게시글입니다." });
+    }
+
+    await prisma.like.delete({
+      where: {
+        id: like.id,
+      },
+    });
+
+    return c.json("좋아요가 취소되었습니다.", 200);
   });

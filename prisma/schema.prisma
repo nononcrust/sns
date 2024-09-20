@@ -12,6 +12,7 @@ model User {
   id           String  @id @default(cuid())
   email        String  @unique
   nickname     String  @unique
+  bio          String?
   profileImage String?
   role         Role    @default(USER)
   locked      Boolean @default(false)
@@ -20,7 +21,7 @@ model User {
   googleAccount GoogleAccount?
   kakaoAccount  KakaoAccount?
 
-  preferences UserPreferences?
+  settings Settings?
 
   posts Post[]
   comments Comment[]
@@ -68,14 +69,17 @@ model KakaoAccount {
   updatedAt DateTime @updatedAt @db.Timestamptz()
 }
 
-model UserPreferences {
-  id      String @id @default(cuid())
+model Settings {
+  id String @id @default(cuid())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  followNotification Boolean @default(true)
+  likeNotification   Boolean @default(true)
+  commentNotification Boolean @default(true)
+
+  profileVisibility ProfileVisibility @default(PUBLIC)
+
+  user User @relation(fields: [userId], references: [id])
   userId String @unique
-
-  darkMode Boolean @default(false)
-
 
   createdAt DateTime @default(now()) @db.Timestamptz()
   updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -96,6 +100,7 @@ model Post {
   bookmarks Bookmark[]
   images Image[]
   reports Report[]
+  linkPreview LinkPreview[]
 
   createdAt DateTime @default(now()) @db.Timestamptz()
   updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -158,6 +163,8 @@ model Follow {
   following User @relation("FollowFollower", fields: [followingId], references: [id])
   followingId String
 
+  accepted Boolean @default(false)
+
   createdAt DateTime @default(now()) @db.Timestamptz()
 
   @@unique ([followerId, followingId])
@@ -202,6 +209,18 @@ model Image {
   commentId String?
 }
 
+model LinkPreview {
+  id   String @id @default(cuid())
+
+  url  String
+  title String
+  description String
+  imageUrl String
+
+  post Post @relation(fields: [postId], references: [id])
+  postId String
+}
+
 model Report {
   id      String @id @default(cuid())
   type ReportType
@@ -237,4 +256,10 @@ enum NotificationType {
   LIKE
   COMMENT
   FOLLOW
+}
+
+enum ProfileVisibility {
+  PUBLIC
+  PRIVATE
+  FOLLOWERS
 }
