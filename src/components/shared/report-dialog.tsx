@@ -1,4 +1,5 @@
 import { useRadioGroup } from "@/hooks/use-radio-group";
+import { objectEntries } from "@/lib/utils";
 import { commentService } from "@/services/comment";
 import { postService } from "@/services/post";
 import { ReportType } from "@prisma/client";
@@ -32,7 +33,7 @@ interface ReportDialogProps {
 }
 
 export const ReportDialog = ({ isOpen, onOpenChange, id, type }: ReportDialogProps) => {
-  const radioGroup = useRadioGroup(ReportType.SPAM);
+  const radioGroup = useRadioGroup<ReportType>(ReportType.SPAM);
 
   const reportPostMutation = postService.useReportPost();
   const reportCommentMutation = commentService.useReportComment();
@@ -49,7 +50,7 @@ export const ReportDialog = ({ isOpen, onOpenChange, id, type }: ReportDialogPro
       {
         param: { id },
         json: {
-          type: radioGroup.value as ReportType,
+          type: radioGroup.value,
         },
       },
       { onSuccess },
@@ -63,7 +64,7 @@ export const ReportDialog = ({ isOpen, onOpenChange, id, type }: ReportDialogPro
       {
         param: { id },
         json: {
-          type: radioGroup.value as ReportType,
+          type: radioGroup.value,
         },
       },
       { onSuccess },
@@ -88,7 +89,7 @@ export const ReportDialog = ({ isOpen, onOpenChange, id, type }: ReportDialogPro
         <Dialog.Title>{TYPE_LABEL[type]} 신고</Dialog.Title>
         <Dialog.Description>신고 사유를 선택해주세요.</Dialog.Description>
         <RadioGroup value={radioGroup.value} onChange={radioGroup.onChange}>
-          {Object.entries(REPORT_TYPE_LABEL).map(([value, label]) => (
+          {objectEntries(REPORT_TYPE_LABEL).map(([value, label]) => (
             <RadioGroup.Item key={value} value={value}>
               {label}
             </RadioGroup.Item>

@@ -12,6 +12,7 @@ import { useTab } from "@/hooks/use-tab";
 import { userService } from "@/services/user";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { ProfileEditDialog } from "./_components/profile-edit-dialog";
 
 export default function ProfilePage() {
   const [followed, setFollowed] = useState(false);
@@ -62,6 +63,7 @@ export default function ProfilePage() {
             {followed ? "언팔로우" : "팔로우"}
           </Button>
         )}
+        {isMe && <ProfileEditDialog trigger={<Button variant="outlined">프로필 수정</Button>} />}
       </div>
       {user.bio && <Bio content={user.bio} />}
       <Tab value={tab.value} onChange={tab.onChange}>

@@ -5,13 +5,25 @@ import { Pagination } from "@/components/ui/pagination";
 import { route } from "@/constants/route";
 import { postService } from "@/services/post";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PostListItem } from "./_components/post-list-item";
 
 export default function PostListPage() {
   const searchParams = useSearchParams();
 
   const page = searchParams.get("page") ?? "1";
+
+  const router = useRouter();
+
+  const pathname = usePathname();
+
+  const onPageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams);
+
+    params.set("page", String(page));
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const { data: postData } = postService.usePosts({
     page: page,
@@ -42,7 +54,7 @@ export default function PostListPage() {
       </ul>
       {postData && (
         <div className="mt-8 flex justify-center">
-          <Pagination page={Number(page)} total={postData.total} onChange={() => {}} />
+          <Pagination page={Number(page)} total={postData.total} onChange={onPageChange} />
         </div>
       )}
     </main>

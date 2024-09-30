@@ -1,5 +1,11 @@
 import { GetPostsRequestQuery } from "@/server/utils";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { api, queryKey } from "./shared";
 
 export const postService = {
@@ -26,6 +32,7 @@ export const postService = {
         const response = await api.posts.$get({ query });
         return await response.json();
       },
+      placeholderData: keepPreviousData,
     });
   },
   usePostDetail: (postId: string) => {
@@ -68,8 +75,8 @@ export const postService = {
 
     return useMutation({
       mutationFn: api.posts[":id"].comments.$post,
-      onSuccess: () => {
-        queryClient.invalidateQueries({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
           queryKey: [queryKey.comment],
         });
       },
@@ -80,8 +87,8 @@ export const postService = {
 
     return useMutation({
       mutationFn: api.posts[":id"].comments[":commentId"].$delete,
-      onSuccess: () => {
-        queryClient.invalidateQueries({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
           queryKey: [queryKey.comment],
         });
       },

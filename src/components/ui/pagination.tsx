@@ -8,7 +8,6 @@ import {
   ChevronsLeftIcon,
   ChevronsRightIcon,
 } from "lucide-react";
-import { IconButton } from "./icon-button";
 
 interface PaginationProps {
   className?: string;
@@ -20,9 +19,11 @@ interface PaginationProps {
 export const Pagination = ({ className, page, onChange, total }: PaginationProps) => {
   const currentPage = page;
 
+  const totalPage = Math.ceil(total / 10);
+
   const renderPages = () => {
-    if (total <= 10) {
-      return Array(total)
+    if (totalPage <= 10) {
+      return Array(totalPage)
         .fill(0)
         .map((_, index) => <PaginationItem key={index} page={index + 1} />);
     }
@@ -37,13 +38,13 @@ export const Pagination = ({ className, page, onChange, total }: PaginationProps
           <PaginationItem page={5} />
           <PaginationItem page={6} />
           <PaginationEllipsis />
-          <PaginationItem page={total - 1} />
-          <PaginationItem page={total} />
+          <PaginationItem page={totalPage - 1} />
+          <PaginationItem page={totalPage} />
         </>
       );
     }
 
-    if (page >= 6 && page <= total - 5) {
+    if (page >= 6 && page <= totalPage - 5) {
       return (
         <>
           <PaginationItem page={1} />
@@ -54,8 +55,8 @@ export const Pagination = ({ className, page, onChange, total }: PaginationProps
           <PaginationItem page={currentPage + 1} />
           <PaginationEllipsis />
 
-          <PaginationItem page={total - 1} />
-          <PaginationItem page={total} />
+          <PaginationItem page={totalPage - 1} />
+          <PaginationItem page={totalPage} />
         </>
       );
     }
@@ -65,12 +66,12 @@ export const Pagination = ({ className, page, onChange, total }: PaginationProps
         <PaginationItem page={1} />
         <PaginationItem page={2} />
         <PaginationEllipsis />
-        <PaginationItem page={total - 5} />
-        <PaginationItem page={total - 4} />
-        <PaginationItem page={total - 3} />
-        <PaginationItem page={total - 2} />
-        <PaginationItem page={total - 1} />
-        <PaginationItem page={total} />
+        <PaginationItem page={totalPage - 5} />
+        <PaginationItem page={totalPage - 4} />
+        <PaginationItem page={totalPage - 3} />
+        <PaginationItem page={totalPage - 2} />
+        <PaginationItem page={totalPage - 1} />
+        <PaginationItem page={totalPage} />
       </>
     );
   };
@@ -78,39 +79,37 @@ export const Pagination = ({ className, page, onChange, total }: PaginationProps
   return (
     <PaginationContext.Provider value={{ page, onChange }}>
       <nav className={cn("flex items-center gap-1", className)}>
-        <IconButton
-          className="size-7"
+        <PaginationButton
           aria-label="처음 페이지로 이동"
           onClick={() => onChange(1)}
           disabled={page === 1}
         >
-          <ChevronsLeftIcon />
-        </IconButton>
-        <IconButton
-          className="size-7"
+          <ChevronsLeftIcon className="size-4" />
+        </PaginationButton>
+        <PaginationButton
           aria-label="이전 페이지로 이동"
           onClick={() => onChange(page - 1)}
           disabled={page === 1}
         >
-          <ChevronLeftIcon />
-        </IconButton>
+          <ChevronLeftIcon className="size-4" />
+        </PaginationButton>
         {renderPages()}
-        <IconButton
+        <PaginationButton
           className="size-7"
           aria-label="다음 페이지로 이동"
           onClick={() => onChange(page + 1)}
-          disabled={page === total}
+          disabled={page === totalPage}
         >
-          <ChevronRightIcon />
-        </IconButton>
-        <IconButton
+          <ChevronRightIcon className="size-4" />
+        </PaginationButton>
+        <PaginationButton
           className="size-7"
           aria-label="마지막 페이지로 이동"
           onClick={() => onChange(total)}
-          disabled={page === total}
+          disabled={page === totalPage}
         >
-          <ChevronsRightIcon />
-        </IconButton>
+          <ChevronsRightIcon className="size-4" />
+        </PaginationButton>
       </nav>
     </PaginationContext.Provider>
   );
@@ -130,13 +129,13 @@ const PaginationItem = ({ page }: PaginationItemProps) => {
   };
 
   return (
-    <IconButton
-      className={cn("size-7", isActive && "")}
+    <PaginationButton
+      className={cn(isActive && "pointer-events-none bg-primary text-white")}
       onClick={onClick}
       title={isActive ? "선택됨" : ""}
     >
       {page}
-    </IconButton>
+    </PaginationButton>
   );
 };
 
@@ -158,10 +157,11 @@ const PaginationButton = ({ className, children, ...props }: PaginationButtonPro
   return (
     <button
       className={cn(
-        "hover:bg-hover flex size-8 items-center justify-center rounded-lg border border-border transition-colors",
+        "flex size-8 items-center justify-center rounded-lg border border-border text-[13px] font-medium transition-colors hover:bg-hover",
         "disabled:cursor-default disabled:select-none disabled:opacity-50",
         className,
       )}
+      {...props}
     >
       {children}
     </button>

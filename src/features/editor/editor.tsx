@@ -28,6 +28,7 @@ interface EditorProps {
   onChange?: (editorValue: EditorValue) => void;
   onFocus?: () => void;
   mode?: "view" | "edit";
+  ["data-testid"]?: string;
 }
 
 export const Editor = ({
@@ -37,6 +38,7 @@ export const Editor = ({
   onChange = noop,
   onFocus = noop,
   mode = "edit",
+  ...props
 }: EditorProps) => {
   const initialConfig = {
     namespace: mode === "edit" ? "editor" : "viewer",
@@ -55,7 +57,7 @@ export const Editor = ({
     <div className={cn("relative", className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <RichTextPlugin
-          contentEditable={<ContentEditable />}
+          contentEditable={<ContentEditable data-testid={props["data-testid"]} />}
           placeholder={<Placeholder text={placeholder} />}
           ErrorBoundary={LexicalErrorBoundary}
         />
